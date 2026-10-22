@@ -1,6 +1,6 @@
 import { Filter } from 'bad-words';
 import config from "../config";
-import { Settings } from "../database";
+import { Settings } from "./db";
 
 const filter = new Filter({
   placeHolder: config.filter.placeholder

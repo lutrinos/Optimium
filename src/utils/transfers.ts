@@ -1,5 +1,5 @@
 import Queue from './queue.js'
-import { Dms } from '../database';
+import { Dms } from './db.js';
 import config from '../config';
 
 const transfers = new Queue();

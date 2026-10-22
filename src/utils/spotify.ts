@@ -28,7 +28,7 @@ function request(options, body = '') {
 }
 
 /* TOKEN */
-import { Settings } from '../database';
+import { Settings } from './db';
 
 let obj = {
     token: null,

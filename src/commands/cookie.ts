@@ -1,4 +1,4 @@
-import { Users } from "../database";
+import { Users } from "../utils/db";
 import { SlashCommandBuilder, time } from "discord.js";
 import { setTimeout as wait } from 'node:timers/promises';
 

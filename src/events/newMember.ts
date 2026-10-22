@@ -1,5 +1,5 @@
 import { Events } from "discord.js";
-import { Users } from "../database";
+import { Users } from "../utils/db";
 
 import { logs, events } from '../config';
 import createLogger from 'with-simple-logger';

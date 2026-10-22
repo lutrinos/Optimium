@@ -1,5 +1,5 @@
 import { SlashCommandBuilder } from "@discordjs/builders";
-import { Messages } from "../database";
+import { Messages } from "../utils/db";
 import { PermissionFlagsBits } from "discord.js";
 
 export default {

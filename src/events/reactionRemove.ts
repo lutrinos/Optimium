@@ -1,4 +1,4 @@
-import { Messages } from "../database";
+import { Messages } from "../utils/db";
 import { Events } from "discord.js";
 import config from "../config";
 

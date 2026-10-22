@@ -1,4 +1,4 @@
-import { Guilds, Users, Messages, Settings } from "../database";
+import { Guilds, Users, Messages, Settings } from "../utils/db";
 
 export default {
     id: 'init',

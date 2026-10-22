@@ -1,6 +1,6 @@
 import { Events } from "discord.js";
 import config from "../config";
-import { Messages } from "../database";
+import { Messages } from "../utils/db";
 
 export default {
     event: Events.MessageReactionAdd,
