@@ -3,7 +3,7 @@ import https from 'https';
 import config from '../config';
 import log from "@/utils/log";
 
-function request(options, body = '') {
+function request(options: any, body = '') {
     return new Promise((resolve, reject) => {
         const req = https.request(options, (res) => {
             res.setEncoding('utf8');
@@ -35,7 +35,7 @@ let obj = {
     last: 0
 };
 
-function getToken(id, secret) {
+function getToken(id: string, secret: string) {
     return new Promise((resolve, reject) => {
         if (!id || !secret) {
             return;
@@ -56,7 +56,7 @@ function getToken(id, secret) {
             };
 
             request(infos, 'grant_type=client_credentials')
-                .then(dts => {
+                .then((dts: any) => {
 
                     if (!dts.err) {
                         obj = {
@@ -67,10 +67,13 @@ function getToken(id, secret) {
                             .then(() => {
                                 log('info', 'New Spotify Token');
                             });
-                        resolve(dts.body.access_token);
+                        resolve(dts.body.access_token as string);
                     } else {
-                        reject(dts.err);
+                        log('error', 'Unable to get spotify token.', dts.error);
                     }
+                })
+                .catch((err) => {
+                    log('error', 'Unable to get spotify token.', err);
                 });
         }
     });
@@ -81,20 +84,26 @@ Settings.get(config.settings.keys.spotifyToken)
         if (o) {
             obj = o;
         } else {
-            getToken(process.env.SPOTIFY_ID, process.env.SPOTIFY_SECRET).then((t) => obj.token = t);
+            getToken(process.env.SPOTIFY_ID!, process.env.SPOTIFY_SECRET!).then((t: unknown) => {
+                obj.token = t;
+            });
         }
     });
 
 
 setInterval(() => {
-    getToken(process.env.SPOTIFY_ID, process.env.SPOTIFY_SECRET)
-        .then((t) => obj.token = t);
+    getToken(process.env.SPOTIFY_ID!, process.env.SPOTIFY_SECRET!)
+        .then((t) => {
+            obj.token = t;
+    });
 }, 4560000);
 
-getToken(process.env.SPOTIFY_ID, process.env.SPOTIFY_SECRET)
-    .then((t) => obj.token = t);
+getToken(process.env.SPOTIFY_ID!, process.env.SPOTIFY_SECRET!)
+    .then((t) => {
+        obj.token = t;
+    });
 
-export const search = function (query, type) {
+export const search = function (query: any, type: any) {
     return new Promise((resolve, reject) => {
         request({
             host: 'api.spotify.com',
@@ -105,7 +114,10 @@ export const search = function (query, type) {
             }
         })
             .then((dts) => {
-                resolve(dts?.body || dts);
+                resolve((dts as any).body);
             })
+            .catch((dts) => {
+                reject(`Contenu invalide ("${(dts as any).body}")`);
+            });
     })
 }

@@ -15,7 +15,7 @@ export default {
         const artist = interaction.options.getString('artist');
 
         search(artist, 'artist')
-            .then(({ artists }) => {
+            .then(({ artists }: any) => {
                 let arr = [];
 
                 artists.items.forEach((item) => {
@@ -37,7 +37,7 @@ export default {
                 interaction.reply({ content: `Results for \`${artist}\``, components: [row] });
             })
             .catch((err) => {
-                interaction.reply(` **An error occured:** \`${err}\``);
+                interaction.reply(` **An error occured:** \`\`\`${err}\`\`\``);
             });
     },
 };

@@ -1,19 +1,18 @@
 import { Users } from "../utils/db";
-import { SlashCommandBuilder, time } from "discord.js";
+import { ChatInputCommandInteraction, Client, SlashCommandBuilder, time } from "discord.js";
 import { setTimeout as wait } from 'node:timers/promises';
 
 export default {
     command: new SlashCommandBuilder()
         .setName('cookie')
         .setDescription('Send a cookie to a friend')
-        .setDMPermission(false)
         .addUserOption(option =>
             option
                 .setName('user')
                 .setDescription('The user who will receive the cookie!')
                 .setRequired(true)
         ),
-    async execute(client, interaction) {
+    async execute(client: Client, interaction: ChatInputCommandInteraction) {
         await interaction.deferReply();
 
         const user = interaction.options.getUser('user').id;
@@ -21,8 +20,12 @@ export default {
 
         Users.get(member)
             .then(async (data) => {
-                let diff = Math.ceil(Math.abs((new Date(data.last) - new Date()) / 60000));
-                if (data.last && diff < 60) {
+                data = data || {};
+                data.last = data.last || 0;
+                
+                const diff = Math.ceil(Math.abs((data.last - Date.now()) / 60000));
+
+                if (diff < 60) {
                     return interaction.editReply(`:no_entry: | You sent a cookie for now, because you sent your last cookie ${diff} minutes ago. You have to wait ${60 - diff} minutes.`)
                 } else if (member === user) {
                     return interaction.editReply(`:no_entry: | You can't send a cookie to yourself <@${member}>`);
@@ -35,7 +38,7 @@ export default {
                 } else {
                     interaction.editReply(`:cook: | Baking the cookie for <@${user}>`);
                     const msg = await interaction.fetchReply();
-                    await wait(Math.random(1, 4) * 1000);
+                    await wait(Math.random() * 4000);
                     msg.edit(`:cookie: Enjoy your meal <@${user}>! You got a cookie from <@${member}> yum yum yum :yum:`);
                 }
             })
