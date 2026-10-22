@@ -122,7 +122,7 @@ client.once(Events.ClientReady, (bot) => {
             }
 
         } catch (err) {
-            console.log('Unable to transfer message.\nReason:', err);
+            log('error', 'Unable to transfer message.\nReason:', err);
         }
     });
 
@@ -152,17 +152,18 @@ client.once(Events.ClientReady, (bot) => {
     bot.on(Events.InteractionCreate, async (interaction) => {
         if (!interaction.isChatInputCommand() && !interaction.isContextMenuCommand()) return;
 
-        console.log(interaction.commandName);
-
         const command = commands.get(interaction.commandName);
 
         if (!command) return interaction.reply('I can\'t find this command.');
 
         try {
+            // @ts-expect-error
             await command(client, interaction);
         } catch (error) {
-            console.error(error);
-            await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true });
+            log('error', 'Error at InteractionCreate (slash command) : ' + interaction.commandName, error);
+            if (!interaction.replied) {
+                await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true });
+            }
         }
     });
 
@@ -174,15 +175,22 @@ client.once(Events.ClientReady, (bot) => {
 
         if (!modal) return;
         try {
+            // @ts-expect-error
             await modal(client, interaction);
         } catch (error) {
-            console.error(error);
-            await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true });
+            log('error', 'Error at InteractionCreate (modal)', error);
+            if (!interaction.replied) {
+                await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true });
+            }
         }
     });
+
     events.forEach((i) => {
         //bot.on(i.event, i.callback.bind(null, client));
     });
+
+    //client.application?.guild?.commands.fetch()
+    //    .then(console.log);
 
     client.application?.commands.set(listOfCommands)
         .then(() => log('info', 'Slash command registred'))

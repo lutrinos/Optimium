@@ -5,7 +5,7 @@
   "description": "A bot for a discord guild",
   "main": "src/index.ts",
   "scripts": {
-    "dev": "bun run src/index.ts",
+    "dev": "bun watch src/index.ts",
     "start": "bun run src/index.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },

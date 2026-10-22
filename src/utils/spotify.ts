@@ -1,6 +1,7 @@
 /* REQUEST */
 import https from 'https';
 import config from '../config';
+import log from "@/utils/log";
 
 function request(options, body = '') {
     return new Promise((resolve, reject) => {
@@ -64,7 +65,7 @@ function getToken(id, secret) {
                         }
                         Settings.set(config.settings.keys.spotifyToken, obj)
                             .then(() => {
-                                console.log('You have a new token!');
+                                log('info', 'New Spotify Token');
                             });
                         resolve(dts.body.access_token);
                     } else {
