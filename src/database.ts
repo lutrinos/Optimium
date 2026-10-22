@@ -1,0 +1,117 @@
+import { open, Database } from 'lmdb';
+import { LRUCache } from 'lru-cache';
+
+/* CACHES */
+const usersCache = new LRUCache<string, any>({
+    maxSize: 500,
+    sizeCalculation: () => 1,
+    ttl: 1000 * 60 * 60,
+});
+
+const guildsCache = new LRUCache<string, any>({
+    maxSize: 100,
+    sizeCalculation: () => 1,
+    ttl: 1000 * 60 * 60,
+});
+
+const settingsCache = new LRUCache<string, any>({
+    maxSize: 100,
+    sizeCalculation: () => 1,
+    ttl: 1000 * 60 * 60,
+});
+
+const messagesCache = new LRUCache<string, any>({
+    maxSize: 200,
+    sizeCalculation: () => 1,
+    ttl: 1000 * 60 * 60,
+});
+
+const dmsCache = new LRUCache<string, any>({
+    maxSize: 200,
+    sizeCalculation: () => 1,
+    ttl: 1000 * 60 * 60,
+});
+
+/* DATABASES */
+const database = open({
+    path: './database',
+    compression: true,
+});
+
+const settings = database.openDB({
+    name: 'settings'
+});
+const guilds = database.openDB({
+    name: 'guilds'
+});
+const users = database.openDB({
+    name: 'users'
+});
+const messages = database.openDB({
+    name: 'messages'
+});
+const dms = database.openDB({
+    name: 'dms'
+});
+
+/* DATA WRAPPER CLASS */
+class DataWrapper {
+    db: Database;
+    cache: LRUCache<string, any>;
+
+    constructor(db: Database, cache: LRUCache<string, any>) {
+        this.db = db;
+        this.cache = cache;
+    }
+
+    async get(key: string) {
+        if (this.cache.has(key)) {
+            return this.cache.get(key);
+        }
+        const val = await this.db.get(key);
+        if (val) {
+            this.cache.set(key, val);
+        }
+        return val;
+    }
+
+    async set(key: string, data:any) {
+        const item = Object.assign(await this.get(key) || {}, data);
+        this.db.putSync(key, item);
+        this.cache.set(key, item);
+        return item;
+    }
+
+    async delete(key: string) {
+        await this.db.remove(key);
+        await this.cache.delete(key);
+    }
+
+    clear() {
+        return this.db.clearSync();
+    }
+}
+
+/* DATA WRAPPER INSTANCES */
+const guildsWrapper = new DataWrapper(guilds, guildsCache);
+const usersWrapper = new DataWrapper(users, usersCache);
+const messagesWrapper = new DataWrapper(messages, messagesCache);
+const settingsWrapper = new DataWrapper(settings, settingsCache);
+const dmsWrapper = new DataWrapper(dms, dmsCache);
+
+/* EXPORTS */
+export default {
+    Guilds: guildsWrapper,
+    Users: usersWrapper,
+    Messages: messagesWrapper,
+    Settings: settingsWrapper,
+    Dms: dmsWrapper
+};
+
+export {
+    settingsWrapper as Settings,
+    guildsWrapper as Guilds,
+    usersWrapper as Users,
+    messagesWrapper as Messages,
+    dmsWrapper as Dms
+}

@@ -1,0 +1,24 @@
+import { SlashCommandBuilder, PermissionFlagsBits } from "discord.js";
+
+export default {
+    command: new SlashCommandBuilder()
+        .setDMPermission(false)
+        .setName('unlock_thread')
+        .setDescription('Unlock, unclose and unarchive this thread')
+        .setDefaultMemberPermissions(PermissionFlagsBits.ModerateMembers),
+    async execute (client, interaction) {
+        if (interaction.channel.isThread()) {
+            await interaction.reply({
+                content: ':white_check_mark: Thread unlocked'
+            });
+
+            await interaction.channel.setLocked(false);
+            await interaction.channel.setArchived(false);
+        } else {
+            await interaction.reply({
+                content: 'Not a thread',
+                ephemeral: true
+            });
+        }
+    }
+}
