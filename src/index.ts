@@ -1,39 +1,47 @@
 import 'dotenv/config';
 
-import { Client, Events, IntentsBitField, Collection, Partials, ActivityType, REST, Routes } from 'discord.js';
+import { Client, Events, IntentsBitField, Collection, Partials, ActivityType, REST, Routes, SlashCommandBuilder } from 'discord.js';
 import fs from 'fs';
 import database from './database';
 import filter from './utils/filter';
 import transfers from './utils/transfers';
 
-console.log('Working with', Object.keys(database).join(', '));
-console.log(filter.clean('The filter is working.'));
+import log from "@/utils/log";
 
+log('info', 'Database loaded', Object.keys(database).join(', '))
+log('info', filter.clean('The filter is working.'));
 
 const client = new Client({
     intents: new IntentsBitField(3276799),
     partials: [Partials.Message, Partials.Channel, Partials.Reaction],
 });
 
+
+
 // settings the modals
-client.modals = new Collection();
+const modals = new Collection();
+
 fs.readdirSync(`${__dirname}/modals`)
     .map(async (i) => {
         const m = await import(`./modals/${i}`);
-        client.modals.set(m.id, m.execute);
+        modals.set(m.id, m.execute);
     });
 
 // settings the commands
-client.commands = new Collection();
-const commands = fs.readdirSync(`${__dirname}/commands`)
+const commands = new Collection();
+
+const listOfCommands = (await Promise.all(fs.readdirSync(`${__dirname}/commands`)
     .map(async (i) => {
-        const c = await import(`./commands/${i}`);
+        const rawCommand = await import(`./commands/${i}`);
+        const c = rawCommand.default;
+
         if (c.disabled) return;
-        if (!c.commands) return;
         
-        client.commands.set(c.command.name, c.execute);
-        return c.command.toJSON();
-    }).filter(Boolean);
+        commands.set(c.command.name, c.execute);
+
+        return c.command;
+    }))).filter(Boolean);
+
 
 // creating the events
 const events = fs.readdirSync(`${__dirname}/events`).map(async (i) => await import(`./events/${i}`));
@@ -55,13 +63,20 @@ function copyMessage(message) {
     };
 }
 
-client.once(Events.ClientReady, (bot) => {
-    console.log(`Ready! Logged in as ${bot.user.tag}`);
+client.on(Events.UserUpdate, (oldUser, newUser) => {
+});
 
-    client.user.setActivity({
-        type: ActivityType.Watching,
-        name: 'you'
-    });
+
+client.once(Events.ClientReady, (bot) => {
+    log('info', `Logged in as ${bot.user.tag}`);
+
+    if (client.user) {
+        log('info', 'New user status : Watching');
+        client.user.setActivity({
+            type: ActivityType.Watching,
+            name: 'you'
+        });
+    }
 
     // for messages
     bot.on(Events.MessageCreate, async (message) => {
@@ -137,7 +152,9 @@ client.once(Events.ClientReady, (bot) => {
     bot.on(Events.InteractionCreate, async (interaction) => {
         if (!interaction.isChatInputCommand() && !interaction.isContextMenuCommand()) return;
 
-        const command = client.commands.get(interaction.commandName);
+        console.log(interaction.commandName);
+
+        const command = commands.get(interaction.commandName);
 
         if (!command) return interaction.reply('I can\'t find this command.');
 
@@ -153,7 +170,7 @@ client.once(Events.ClientReady, (bot) => {
     bot.on(Events.InteractionCreate, async (interaction) => {
         if (!interaction.isModalSubmit()) return;
 
-        const modal = client.modals.get(interaction.customId);
+        const modal = modals.get(interaction.customId);
 
         if (!modal) return;
         try {
@@ -167,30 +184,9 @@ client.once(Events.ClientReady, (bot) => {
         //bot.on(i.event, i.callback.bind(null, client));
     });
 
-
-
-    client.guilds.cache.forEach((guild) => {
-        guild.commands.set(commands);
-    });
-
-    // and deploy your commands!
-    /*
-    (async () => {
-        try {
-            console.log(`Started refreshing ${commands.length} application (/) commands.`);
-
-            // The put method is used to fully refresh all commands in the guild with the current set
-            const data = await rest.put(
-                Routes.applicationCommands(client.user.id),
-                { body: [] || commands },
-            );
-
-            console.log(`Successfully reloaded ${data.length} application (/) commands.`);
-        } catch (error) {
-            // And of course, make sure you catch and log any errors!
-            console.error(error);
-        }
-    })();*/
+    client.application?.commands.set(listOfCommands)
+        .then(() => log('info', 'Slash command registred'))
+        .catch((err) => log('error', 'Unable to register slash commands', err));
 });
 
 client.login(process.env.BOT_TOKEN);
