@@ -45,8 +45,10 @@ Object.keys(names)
         choices[part] = [];
         Object.keys(names[part])
             .forEach((type) => {
-                keys[part][type] = Object.keys(bcd[part][type]);
-                choices[part].push({ name: names[part][type], value: type });
+                if (bcd[part] && bcd[part][type]) {
+                    keys[part][type] = Object.keys(bcd[part][type]);
+                    choices[part].push({ name: names[part][type], value: type });
+                }
             });
     });
 

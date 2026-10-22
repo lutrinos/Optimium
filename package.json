@@ -4,14 +4,14 @@
   "description": "A bot for a discord guild",
   "main": "index.js",
   "scripts": {
-    "dev": "nodemon index.js",
+    "dev": "node index.js",
     "start": "node index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Nathan TILLIER",
   "license": "ISC",
   "dependencies": {
-    "@discordjs/opus": "^0.8.0",
+    "@discordjs/opus": "^0.10.0",
     "@mdn/browser-compat-data": "^5.2.37",
     "an-array-of-english-words": "^2.0.0",
     "an-array-of-french-words": "^2.0.0",
@@ -25,7 +25,6 @@
     "lmdb": "^2.7.9",
     "lru-cache": "^7.16.1",
     "node-fetch": "^3.3.0",
-    "nodemon": "^2.0.20",
     "parse-path": "^7.0.0",
     "reverso-api": "^2.22.3",
     "tldts": "^5.7.109",

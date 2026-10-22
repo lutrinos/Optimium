@@ -7,8 +7,10 @@ const filter = new Filter({
 });
 
 Settings.get(config.settings.keys.badWords)
-  .then(({ words }) => {
-    filter.addWords(...words);
+  .then((data) => {
+    if (data && data.words) {
+      filter.addWords(...words);
+    }
   });
 
 module.exports = filter;

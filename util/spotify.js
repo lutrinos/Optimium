@@ -37,7 +37,8 @@ let obj = {
 function getToken(id, secret) {
     return new Promise((resolve, reject) => {
         if (!id || !secret) {
-            throw new Error('You need to specify an id and a secret, in order to access to a secret token.')
+            return;
+            // throw new Error('You need to specify an id and a secret, in order to access to a secret token.')
         }
 
         if (new Date().getTime() - obj.last <= 3600000) {
