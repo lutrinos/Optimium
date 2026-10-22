@@ -1,14 +1,37 @@
-import { SlashCommandBuilder, EmbedBuilder } from 'discord.js';
+import { SlashCommandBuilder, EmbedBuilder, Client, ChatInputCommandInteraction } from 'discord.js';
 import wd from 'word-definition';
 
-function getEmbed(result) {
+type Language = 'en' | 'fr' | 'es' | 'de';
+
+const translations = {
+    title: {
+        en: 'Definition of ',
+        fr: 'Définition de ',
+        de: 'Definition von ',
+        es: 'Definición de '
+    },
+    category: {
+        en: 'Category',
+        fr: 'Catégorie',
+        es: 'Categoría',
+        de: 'Kategorie'
+    },
+    exists: {
+        en: 'This word doesn\'t exists.',
+        fr: 'Ce mot n\'existe pas.',
+        de: 'Dieses Wort existiert nicht.',
+        es: 'Esa palabra no existe.'
+    }
+}
+
+function getEmbed(result: any, lang: Language) {
     return new EmbedBuilder()
         .setColor(0x0099FF)
-        .setTitle(`**This is the definition of** \`${result.word.replace(/`/g, '\\`')}\``)
+        .setTitle(`${translations.title[lang] ?? translations.title.en} \`${result.word.replace(/`/g, '\\`')}\``)
         .setDescription(
             result.err
-            ? `**The word** \\\`${result.err.replace(/`/g, '\\`')}\\\` **doesn't exists.**`
-            : `${result.definition}\n\n**Category:** ${result.category}`
+            ? (translations.exists[lang] ?? translations.exists.en)
+            : `${result.definition}\n\n**${translations.category[lang] ?? translations.category.en} :** ${result.category}`
         );
 }
 
@@ -27,23 +50,19 @@ export default {
                 .setRequired(false)
                 .addChoices(
                     { name: 'English', value: 'en' },
-                    { name: 'French', value: 'fr' },
-                    { name: 'German', value: 'de' },
+                    { name: 'Français', value: 'fr' },
+                    { name: 'Deutsch', value: 'de' },
+                    // { name: 'Español', value: 'es' }
                 )),
-    execute(client, interaction) {
+    execute(client: Client, interaction: ChatInputCommandInteraction) {
         const word = interaction.options.getString('word');
         const lang = interaction.options.getString('language') ?? 'en';
 
-        interaction.channel.sendTyping();
-
-        wd.getDef(
-            word,
-            ['fr', 'de', 'en'].includes(lang) ? lang : 'en',
-            {
+        wd.getDef(word, lang, {
                 exact: false
             },
-            (result) => {
-                interaction.reply({ embeds: [getEmbed(result)] });
+            (result: any) => {
+                interaction.reply({ embeds: [getEmbed(result, lang as Language)] });
             }
         )
     },
